@@ -117,6 +117,7 @@ public class BattleNavalController {
      */
     @FXML
     public void initialize() {
+        // Configuracion inicial de controles visibles en la escena.
         orientationChoiceBox.setItems(FXCollections.observableArrayList(Orientation.values()));
         orientationChoiceBox.getSelectionModel().select(Orientation.HORIZONTAL);
         fleetListView.setItems(fleetItems);
@@ -131,6 +132,7 @@ public class BattleNavalController {
             }
         });
 
+        // Se crea el estado base del juego y se activa auto-guardado periodico.
         newGame();
         autoSaveService.start(this::getCurrentState);
     }
@@ -142,6 +144,7 @@ public class BattleNavalController {
 
     @FXML
     private void onContinueGame() {
+        // Restaura la ultima partida serializada en disco.
         Optional<GameState> restored = persistenceService.loadLatestGame();
         if (restored.isEmpty()) {
             showInformation("No saved game", "There is no saved game to continue.");
@@ -158,6 +161,7 @@ public class BattleNavalController {
     @FXML
     private void onAutoPlace() {
         requirePlacementPhase();
+        // Delega al motor la ubicacion aleatoria de toda la flota del jugador.
         gameEngine.autoPlacePlayerFleet(gameState);
         refreshUi();
         updateStatus("Player fleet auto-placed.");
@@ -182,6 +186,7 @@ public class BattleNavalController {
             showInformation("Verification mode", "Enable verification mode with Ctrl+Shift+V to reveal enemy ships.");
             return;
         }
+        // Solo modo verificacion puede alternar visibilidad de naves enemigas.
         revealEnemyBoard = !revealEnemyBoard;
         refreshUi();
     }
@@ -230,6 +235,7 @@ public class BattleNavalController {
         phaseLabel.setText("Phase: " + gameState.getGamePhase().name());
         playerProgressBar.setProgress(gameState.getPlayerBoard().getFleetCompletionRatio());
 
+        // Redibuja ambos tableros segun fase, disparos y modo de verificacion.
         playerBoardContainer.getChildren().setAll(renderBoard(gameState.getPlayerBoard(), true, false, true));
         enemyBoardContainer.getChildren().setAll(renderBoard(gameState.getEnemyBoard(), revealEnemyBoard, true));
         fleetItems.setAll(gameEngine.getRemainingFleetText(gameState));
@@ -247,6 +253,7 @@ public class BattleNavalController {
     }
 
     private Node renderBoard(Board board, boolean revealShips, boolean allowShot, boolean allowDrop) {
+        // El drag and drop solo aplica al tablero del jugador en fase de colocacion.
         boolean dropEnabled = allowDrop && board == gameState.getPlayerBoard() && gameState.getGamePhase() == GamePhase.PLACING;
         PlacementPreview preview = board == gameState.getPlayerBoard() ? placementPreview : PlacementPreview.empty();
         return BoardRenderer.render(
@@ -296,12 +303,14 @@ public class BattleNavalController {
                 gameEngine.placePlayerShip(gameState, selectedShipType, coordinate, orientationChoiceBox.getValue());
                 selectedShipType = null;
                 fleetListView.getSelectionModel().clearSelection();
+                // Cada colocacion valida refresca vista y persiste estado.
                 refreshUi();
                 saveCurrentState();
                 return;
             }
 
             if (gameState.getGamePhase() == GamePhase.PLAYING && board == gameState.getEnemyBoard()) {
+                // En batalla, los clicks del jugador se traducen a disparos al enemigo.
                 handlePlayerShot(coordinate);
             }
         } catch (InvalidPlacementException | GameStateException ex) {
@@ -370,6 +379,7 @@ public class BattleNavalController {
             return PlacementPreview.empty();
         }
 
+        // Calcula las celdas que ocuparia la nave segun tipo + orientacion actual.
         Set<Coordinate> previewCoordinates = new HashSet<>();
         int shipSize = selectedShipType.size();
         Orientation orientation = orientationChoiceBox.getValue();
@@ -381,6 +391,7 @@ public class BattleNavalController {
             previewCoordinates.add(coordinate);
         }
 
+        // Marca si la posicion propuesta es valida (dentro del tablero y sin superposicion).
         boolean valid = true;
         for (Coordinate coordinate : previewCoordinates) {
             if (!coordinate.isInsideBoard() || gameState.getPlayerBoard().getCell(coordinate).hasShip()) {
@@ -404,6 +415,7 @@ public class BattleNavalController {
         }
 
         if (playerShot.status() == ShotStatus.WATER) {
+            // Si falla, cede el turno a la maquina.
             triggerMachineTurn();
         }
     }
@@ -411,6 +423,7 @@ public class BattleNavalController {
     private void triggerMachineTurn() {
         machineExecutor.submit(() -> {
             try {
+                // Pausa breve para que el turno de la maquina se perciba natural en UI.
                 Thread.sleep(700L);
                 ShotResult shotResult = gameEngine.performMachineTurn(gameState);
                 Platform.runLater(() -> {
@@ -478,6 +491,7 @@ public class BattleNavalController {
 
     private void handleGlobalKeyPressed(KeyEvent event) {
         if (event.isControlDown() && event.isShiftDown() && event.getCode() == KeyCode.V) {
+            // Atajo de docente para habilitar/inhabilitar modo verificacion.
             verificationModeEnabled = !verificationModeEnabled;
             if (!verificationModeEnabled) {
                 revealEnemyBoard = false;
@@ -488,10 +502,12 @@ public class BattleNavalController {
                     : "Verification mode disabled. Enemy reveal locked.");
         }
         if (event.isControlDown() && event.getCode() == KeyCode.S) {
+            // Guardado manual rapido.
             saveCurrentState();
             updateStatus("Game saved.");
         }
         if (event.isControlDown() && event.getCode() == KeyCode.L) {
+            // Carga manual de la ultima partida guardada.
             onContinueGame();
         }
     }

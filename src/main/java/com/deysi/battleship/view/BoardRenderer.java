@@ -73,6 +73,7 @@ public final class BoardRenderer {
 
         gridPane.add(headerCell(""), 0, 0);
         for (int col = 0; col < Board.SIZE; col++) {
+            // Encabezado alfabetico de columnas (A..J).
             gridPane.add(headerCell(String.valueOf((char) ('A' + col))), col + 1, 0);
         }
 
@@ -81,6 +82,7 @@ public final class BoardRenderer {
             for (int col = 0; col < Board.SIZE; col++) {
                 Coordinate coordinate = new Coordinate(row, col);
                 Cell cell = board.getCell(coordinate);
+                // Cada celda combina: base + icono de nave + marca de disparo + preview de colocacion.
                 StackPane cellPane = createCellPane(cell, revealShips, preview, coordinate);
                 cellPane.getStyleClass().add("battle-cell");
                 Tooltip.install(cellPane, new Tooltip("Click this square"));
@@ -91,6 +93,7 @@ public final class BoardRenderer {
                     cellPane.setStyle("-fx-cursor: hand;");
                 }
                 if (allowDrop) {
+                    // Eventos de drag and drop usados para colocar barcos en el tablero propio.
                     cellPane.setOnDragOver(event -> {
                         if (event.getGestureSource() != cellPane && event.getDragboard().hasString()) {
                             event.acceptTransferModes(TransferMode.COPY);
@@ -146,6 +149,7 @@ public final class BoardRenderer {
 
         boolean shouldShowShip = cell.hasShip() && (revealShips || cell.getShotStatus() == ShotStatus.SUNK);
         if (shouldShowShip) {
+            // Solo se revela nave enemiga cuando corresponde por modo de juego/verificacion.
             stackPane.getChildren().add(createShipSegmentNode(cell.getShip(), coordinate, cell.getShotStatus() == ShotStatus.SUNK));
         }
 
@@ -180,6 +184,7 @@ public final class BoardRenderer {
             segmentIndex = 0;
         }
 
+        // Se recorta el sprite completo por segmentos para pintar la parte correcta en cada celda.
         boolean sourceHorizontal = image.getWidth() >= image.getHeight();
         int shipLength = ship.type().size();
 
@@ -204,6 +209,7 @@ public final class BoardRenderer {
         imageView.setSmooth(true);
 
         if (rotateForBoardOrientation) {
+            // Rota 90 grados cuando la orientacion del recurso no coincide con la nave en tablero.
             imageView.setRotate(90);
         }
 
@@ -211,6 +217,7 @@ public final class BoardRenderer {
     }
 
     private static Node createPlacementOverlay(boolean valid) {
+        // Verde: posicion valida. Rojo: posicion invalida.
         Rectangle overlay = new Rectangle(CELL_SIZE - 4, CELL_SIZE - 4);
         overlay.setArcHeight(10);
         overlay.setArcWidth(10);
@@ -242,6 +249,7 @@ public final class BoardRenderer {
     }
 
     private static Node createWaterMark() {
+        // X roja para disparo al agua.
         Line first = new Line(4, 4, 22, 22);
         Line second = new Line(4, 22, 22, 4);
         first.setStroke(Color.RED);
@@ -260,6 +268,7 @@ public final class BoardRenderer {
     }
 
     private static Node createHitMark() {
+        // Marca de impacto parcial (barco tocado pero no hundido).
         Circle body = new Circle(12, Color.web("#262626"));
         body.setStroke(Color.web("#000000"));
         Circle spark = new Circle(4, Color.web("#ffb347"));
@@ -273,6 +282,7 @@ public final class BoardRenderer {
     }
 
     private static Node createSunkMark() {
+        // Marca visual de hundimiento total.
         Polygon flame = new Polygon(
                 -10.0, 12.0,
                 -2.0, -4.0,

@@ -35,11 +35,14 @@ public class PersistenceService {
      */
     public void save(GameState gameState) {
         try {
+            // Garantiza carpeta local de trabajo para todos los archivos de persistencia.
             Files.createDirectories(storageDirectory);
             try (ObjectOutputStream outputStream = new ObjectOutputStream(Files.newOutputStream(gameFile,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))) {
+                // Estado completo serializado para reanudar partida exacta.
                 outputStream.writeObject(gameState);
             }
+            // Metadatos planos para trazabilidad rapida sin deserializar.
             Files.writeString(nicknameFile, gameState.getPlayerNickname(), StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             Files.writeString(sunkFile,
@@ -62,6 +65,7 @@ public class PersistenceService {
             return Optional.empty();
         }
         try (ObjectInputStream inputStream = new ObjectInputStream(Files.newInputStream(gameFile))) {
+            // Rehidrata el objeto completo del ultimo guardado.
             Object object = inputStream.readObject();
             if (object instanceof GameState gameState) {
                 return Optional.of(gameState);

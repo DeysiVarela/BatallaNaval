@@ -127,8 +127,10 @@ public class GameEngine {
         ensureTurn(gameState, Turn.MACHINE);
         ShotResult result = null;
         do {
+            // La estrategia decide la siguiente coordenada no disparada.
             Coordinate coordinate = shotStrategy.nextShot(gameState.getPlayerBoard());
             result = applyShot(gameState, gameState.getPlayerBoard(), false, coordinate);
+            // La maquina repite turno mientras acierta (HIT/SUNK), termina cuando cae al agua.
         } while (result.status() != ShotStatus.WATER && !gameState.isFinished());
         if (!gameState.isFinished()) {
             gameState.setCurrentTurn(Turn.PLAYER);
@@ -156,6 +158,7 @@ public class GameEngine {
         try {
             ShotResult result = targetBoard.receiveShot(coordinate);
             if (result.status() == ShotStatus.SUNK) {
+                // Lleva estadisticas de hundimientos por bando para UI y persistencia.
                 if (targetEnemy) {
                     gameState.incrementPlayerSunkShips();
                 } else {
@@ -163,9 +166,11 @@ public class GameEngine {
                 }
             }
             if (targetBoard.allShipsSunk()) {
+                // Cierre oficial de partida cuando no quedan naves en pie.
                 gameState.setGamePhase(GamePhase.FINISHED);
                 gameState.setPlayerWinner(targetEnemy);
             }
+            // El turno solo cambia cuando el disparo cae al agua.
             gameState.setCurrentTurn(result.status() == ShotStatus.WATER ? gameState.getCurrentTurn().opposite() : gameState.getCurrentTurn());
             return result;
         } catch (InvalidPlacementException exception) {
@@ -177,6 +182,7 @@ public class GameEngine {
         for (ShipType shipType : ShipType.defaultFleet()) {
             boolean placed = false;
             while (!placed) {
+                // Intenta posiciones aleatorias hasta hallar una ubicacion valida.
                 Orientation orientation = random.nextBoolean() ? Orientation.HORIZONTAL : Orientation.VERTICAL;
                 Coordinate origin = new Coordinate(random.nextInt(Board.SIZE), random.nextInt(Board.SIZE));
                 Ship ship = shipFactory.create(shipType, origin, orientation);
