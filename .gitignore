@@ -1,0 +1,13 @@
+# Maven
+/target/
+
+# IDE
+/.idea/
+*.iml
+
+# VS Code local settings (optional)
+.vscode/*.log
+
+# OS
+.DS_Store
+Thumbs.db

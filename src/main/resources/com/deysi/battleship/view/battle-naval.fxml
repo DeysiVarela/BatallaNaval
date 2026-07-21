@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1240.0" stylesheets="@battle-naval.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.deysi.battleship.controller.BattleNavalController">
+    <top>
+        <VBox spacing="10.0" styleClass="top-panel" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="18.0" bottom="16.0" left="18.0"/>
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Label text="Batalla Naval" styleClass="app-title"/>
+                        <Separator prefWidth="16.0"/>
+                        <Label fx:id="nicknameLabel" text="Player: -" styleClass="status-chip"/>
+                        <Label fx:id="phaseLabel" text="Phase: PLACING" styleClass="status-chip"/>
+                        <Label fx:id="sunkLabel" text="Ships sunk: 0 / 0" styleClass="status-chip"/>
+                    </children>
+                </HBox>
+                <ProgressBar fx:id="playerProgressBar" prefWidth="Infinity" progress="0.0"/>
+                <Label fx:id="statusLabel" text="Place your ships to begin." styleClass="status-message" wrapText="true"/>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <HBox spacing="14.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="14.0" right="14.0" bottom="14.0" left="14.0"/>
+            </padding>
+            <children>
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" styleClass="board-card">
+                    <padding>
+                        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+                    </padding>
+                    <children>
+                        <Label text="Player Position Board" styleClass="panel-title"/>
+                        <GridPane fx:id="playerBoardContainer" focusTraversable="true" onKeyPressed="#onPlayerBoardKeyPressed" onMouseEntered="#onSceneReady"/>
+                    </children>
+                </VBox>
+                <VBox spacing="10.0" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" styleClass="board-card">
+                    <padding>
+                        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+                    </padding>
+                    <children>
+                        <Label text="Enemy Main Board" styleClass="panel-title"/>
+                        <GridPane fx:id="enemyBoardContainer" focusTraversable="true"/>
+                    </children>
+                </VBox>
+                <VBox spacing="10.0" prefWidth="270.0" styleClass="side-card">
+                    <padding>
+                        <Insets top="12.0" right="12.0" bottom="12.0" left="12.0"/>
+                    </padding>
+                    <children>
+                        <Label text="Fleet and Controls" styleClass="panel-title"/>
+                        <ChoiceBox fx:id="orientationChoiceBox" onAction="#onOrientationChanged" prefWidth="Infinity"/>
+                        <Button fx:id="autoPlaceButton" maxWidth="Infinity" onAction="#onAutoPlace" text="Auto Place Fleet"/>
+                        <Button fx:id="startBattleButton" maxWidth="Infinity" onAction="#onStartBattle" text="Start Battle"/>
+                        <Button fx:id="toggleEnemyRevealButton" maxWidth="Infinity" onAction="#onToggleEnemyReveal" text="Toggle Enemy Reveal"/>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Button fx:id="newGameButton" HBox.hgrow="ALWAYS" maxWidth="Infinity" onAction="#onNewGame" text="New Game"/>
+                                <Button fx:id="continueButton" HBox.hgrow="ALWAYS" maxWidth="Infinity" onAction="#onContinueGame" text="Continue"/>
+                            </children>
+                        </HBox>
+                        <Separator/>
+                        <Label fx:id="placementHintLabel" text="Select a ship to see placement help." styleClass="status-chip" wrapText="true"/>
+                        <Label text="Click the full square of the grid cell. The intersections are only separators." styleClass="panel-note" wrapText="true"/>
+                        <Label text="Available Ships" styleClass="panel-subtitle"/>
+                        <ListView fx:id="fleetListView" prefHeight="280.0" VBox.vgrow="ALWAYS"/>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </center>
+</BorderPane>
